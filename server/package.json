@@ -1,0 +1,32 @@
+{
+  "name": "@h4us/feeltool-server",
+  "version": "0.0.1",
+  "description": "",
+  "main": "app.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "tap test/**/*.test.js",
+    "start": "node app.js",
+    "prd-start": "NODE_ENV=production node app.js",
+    "dev": "nodemon app.js",
+    "fy-start": "fastify start -l info app-with-cli.js",
+    "fy-dev": "fastify start -w -l info -P app-with-cli.js"
+  },
+  "keywords": [],
+  "author": "HAUS inc.",
+  "license": "ISC",
+  "dependencies": {
+    "fastify": "^3.0.0",
+    "fastify-autoload": "^3.3.1",
+    "fastify-cli": "^2.7.0",
+    "fastify-plugin": "^3.0.0",
+    "fastify-socket.io": "^1.0.2",
+    "fastify-static": "^3.4.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7",
+    "tap": "^14.11.0"
+  }
+}
