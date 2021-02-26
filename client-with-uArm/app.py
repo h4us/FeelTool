@@ -46,11 +46,11 @@ def reply(angle, dx, dy):
   # )
   # swift.set_position(y=max(dy + 100,0))
   # swift.set_position(z=100)
-  swift.set_polar(rotation=angle, height=max(dy, 0), speed=1000*200)
-  swift.flush_cmd(wait_stop=False)
+  swift.set_polar(rotation=angle, height=max(dy, 0), speed=1000*500)
+  swift.flush_cmd(wait_stop=True)
 
 async def start_server():
-  print(sys.argv);
+  print(sys.argv)
   url = 'http://localhost:8080'
   if len(sys.argv) > 1:
     url = sys.argv[1]
