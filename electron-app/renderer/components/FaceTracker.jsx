@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 import { io } from 'socket.io-client';
 
@@ -28,7 +28,7 @@ import { FaceMeshFaceGeometry } from "../lib/face.js";
 import { OrbitControls } from "../lib/OrbitControls.js";
 
 export default function FaceTracker() {
-  const [isSocketConnected, setIsSocketConnected] = useState(false);
+  const isSocketConnectedRef = useRef(false);
   const [loadStatus, setLoadStatus] = useState('');
 
   useEffect(() => {
@@ -38,12 +38,11 @@ export default function FaceTracker() {
     const socket = io('http://0.0.0.0:9999', {
       path: '/internal-app/socket.io'
     });
-    // let isSocketConnected = false;
     let frameNum = 0;
 
     socket.on('connect', () => {
       console.info('connect', socket.id);
-      setIsSocketConnected(true);
+      isSocketConnectedRef.current = true;
     });
 
     const av = document.querySelector("gum-av");
@@ -204,9 +203,11 @@ export default function FaceTracker() {
         let angle = (e.y + (Math.PI / 2)) * 180 / Math.PI;
         angle = (angle < 0) ? angle + 360 : angle;
 
-        if (frameNum % 15 == 0 && isSocketConnected) {
+        if (frameNum % 20 == 0) {
           console.log('tick', angle, Math.min(dy * 2 + Math.max(track.position.y, 0), 180));
-          socket.emit('tracking', angle, 0, Math.min(dy * 2 + Math.max(track.position.y + 20, 30), 180));
+          if (isSocketConnectedRef.current) {
+            socket.emit('tracking', angle, 0, Math.min(dy * 2 + Math.max(track.position.y + 20, 30), 180));
+          }
         }
       }
 
@@ -230,7 +231,7 @@ export default function FaceTracker() {
     }
 
     async function init() {
-      console.log('start init');
+      console.log('post init');
 
       setTimeout(() => {
         (async () => {
@@ -239,7 +240,6 @@ export default function FaceTracker() {
           const model = await facemesh.load({ maxFaces: 1 });
           setLoadStatus('Detecting face...');
 
-          //
           // let isGrip = 0;
           // let isPause = 0;
 
@@ -258,11 +258,11 @@ export default function FaceTracker() {
           //   }
           // });
 
-          //
           render(model);
         })();
 
       }, 2000);
+
       console.log('init done');
     }
 
@@ -282,7 +282,7 @@ export default function FaceTracker() {
       </div>
 
       <div style={{position:'fixed', top: 0, left:0, background: 'rgba(255,255,255,.8)', padding:'0.25rem', fontSize:'0.8rem'}}>
-        <p>socket.io status: {isSocketConnected ? 'connected!' : '--'}</p>
+        <p>socket.io status: {isSocketConnectedRef.current ? 'connected!' : '--'}</p>
         <p>model status: {loadStatus}</p>
       </div>
     </>
