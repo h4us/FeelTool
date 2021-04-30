@@ -230,32 +230,40 @@ export default function FaceTracker() {
     }
 
     async function init() {
-      await Promise.all([tf.setBackend("webgl"), av.ready()]);
-      setLoadStatus("Loading model...");
-      const model = await facemesh.load({ maxFaces: 1 });
-      setLoadStatus('Detecting face...');
+      console.log('start init');
 
-      //
-      // let isGrip = 0;
-      // let isPause = 0;
+      setTimeout(() => {
+        (async () => {
+          await Promise.all([tf.setBackend("webgl"), av.ready()]);
+          setLoadStatus("Loading model...");
+          const model = await facemesh.load({ maxFaces: 1 });
+          setLoadStatus('Detecting face...');
 
-      // document.querySelector('#grip').addEventListener('click', () => {
-      //   isGrip = (isGrip + 1) % 2;
-      //   console.log('grab?', isGrip);
-      //   socket.emit('attachment', 'grip', isGrip);
-      // });
+          //
+          // let isGrip = 0;
+          // let isPause = 0;
 
-      // document.querySelector('#pause').addEventListener('click', () => {
-      //   isPause = (isPause + 1) % 2;
-      //   if (isPause) {
-      //     av.video.pause();
-      //   } else {
-      //     av.video.play();
-      //   }
-      // });
+          // document.querySelector('#grip').addEventListener('click', () => {
+          //   isGrip = (isGrip + 1) % 2;
+          //   console.log('grab?', isGrip);
+          //   socket.emit('attachment', 'grip', isGrip);
+          // });
 
-      //
-      render(model);
+          // document.querySelector('#pause').addEventListener('click', () => {
+          //   isPause = (isPause + 1) % 2;
+          //   if (isPause) {
+          //     av.video.pause();
+          //   } else {
+          //     av.video.play();
+          //   }
+          // });
+
+          //
+          render(model);
+        })();
+
+      }, 2000);
+      console.log('init done');
     }
 
     init();
