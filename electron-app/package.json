@@ -1,7 +1,7 @@
 {
-  "name": "FeelTool-electron-app",
+  "name": "@h4us/feeltool-electron-app",
   "productName": "FeelTool",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "main": "main/index.js",
   "scripts": {
     "clean": "rimraf dist renderer/.next renderer/out",
@@ -36,5 +36,6 @@
     "fastify-socket.io": "^2.0.0",
     "fastify-static": "^4.0.1"
   },
+  "author": "HAUS inc.",
   "license": "MIT"
 }

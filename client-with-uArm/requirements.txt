@@ -6,16 +6,16 @@
 #
 
 -i https://pypi.org/simple
-aiohttp==3.7.3
+aiohttp==3.7.4.post0
 async-timeout==3.0.1; python_full_version >= '3.5.3'
 attrs==20.3.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 bidict==0.21.2; python_version >= '3.6'
-chardet==3.0.4
+chardet==4.0.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
 git+https://github.com/uArm-Developer/uArm-Python-SDK.git@936c043af842dcc6fd1ac3566fa74ab620d18286#egg=uarm-python-sdk
 idna==3.1; python_version >= '3.4'
 multidict==5.1.0; python_version >= '3.6'
 pyserial==3.5
-python-engineio==4.0.0
-python-socketio==5.0.4
+python-engineio==4.1.0
+python-socketio==5.2.1
 typing-extensions==3.7.4.3
 yarl==1.6.3; python_version >= '3.6'
