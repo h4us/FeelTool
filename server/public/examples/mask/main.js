@@ -33,6 +33,25 @@ socket.on('connect', () => {
 });
 
 const av = document.querySelector("gum-av");
+// document.querySelector('#recorded').onloadeddata = () => {
+//   console.log('loaded!');
+// };
+
+// const av = {
+//   async ready() {
+//     return new Promise((resolve) => {
+//       // document.querySelector('#recorded').onloadeddata = () => {
+//       //   console.log('loaded!');
+//       resolve();
+//       // };
+//     });
+//   },
+//   style: {
+//     opacity: 0
+//   },
+//   video: document.querySelector('#recorded')
+// };
+
 const canvas = document.querySelector("canvas");
 const status = document.querySelector("#status");
 
@@ -212,9 +231,9 @@ async function render(model) {
     let angle = (e.y + (Math.PI / 2)) * 180 / Math.PI;
     angle = (angle < 0) ? angle + 360 : angle;
 
-    if (frameNum % 35 == 0 && isSocketConnected) {
+    if (frameNum % 15 == 0 && isSocketConnected) {
       console.log('tick', angle, Math.min(dy * 2 + Math.max(track.position.y, 0), 180));
-      socket.emit('tracking', angle, 0, Math.min(dy * 2 + Math.max(track.position.y, 0), 180));
+      socket.emit('tracking', angle, 0, Math.min(dy * 2 + Math.max(track.position.y + 20, 30), 180));
     }
   }
 
@@ -244,6 +263,27 @@ async function init() {
   status.textContent = "Loading model...";
   const model = await facemesh.load({ maxFaces: 1 });
   status.textContent = "Detecting face...";
+
+  //
+  let isGrip = 0;
+  let isPause = 0;
+
+  document.querySelector('#grip').addEventListener('click', () => {
+    isGrip = (isGrip + 1) % 2;
+    console.log('grab?', isGrip);
+    socket.emit('attachment', 'grip', isGrip);
+  });
+
+  document.querySelector('#pause').addEventListener('click', () => {
+    isPause = (isPause + 1) % 2;
+    if(isPause) {
+      av.video.pause();
+    } else {
+      av.video.play();
+    }
+  });
+
+  //
   render(model);
 }
 
