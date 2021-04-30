@@ -20,7 +20,7 @@ fastify.get('/hello', async (request, reply) => {
 });
 
 fastify.listen(
-  process.env.NODE_ENV == 'production' ? 80 : 8080,
+  process.env.NODE_ENV == 'production' ? 80 : 9999,
   async (err, address) => {
     if (err) {
       fastify.log.error(err);
@@ -39,6 +39,11 @@ fastify.listen(
         fastify.io.of('/').emit(
           'reply', angle, dx, dy
         );
+      });
+
+      socket.on('attachment', (name, value) => {
+        console.info('attachment', name, value);
+        fastify.io.of('/').emit(name, value);
       });
     });
   }

@@ -51,7 +51,16 @@
     <p id="status">Loading...</p>
     <div id="container">
       <gum-av></gum-av>
+      <!-- <div style="width:100vw; height:100vh">
+           <video id="recorded" autoplay muted loop style="margin:0 auto; display:block; height:100%;">
+           <source src="/app/test.webm" />
+           </video>
+           </div> -->
       <canvas id="canvas"></canvas>
+    </div>
+    <div style="position:fixed; right:0; top:0; padding:1rem; z-index:99;">
+      <button id="grip" style="font-size:140%;">grip</button>
+      <button id="pause" style="font-size:140%;">pause</button>
     </div>
   </body>
 
@@ -66,7 +75,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r125/three.min.js"></script>
   <script src="https://cdn.socket.io/3.1.1/socket.io.min.js"></script>
-  
+
   <script src="../../third_party/gum-av.js" type="module"></script>
   <script src="main.js" type="module"></script>
 </html>
