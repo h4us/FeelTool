@@ -15,7 +15,12 @@
     "files": [
       "main",
       "renderer/out"
-    ]
+    ],
+    "mac": {
+      "extendInfo": {
+        "NSCameraUsageDescription": "Please give access to your webcam"
+      }
+    }
   },
   "devDependencies": {
     "@types/electron": "^1.6.10",

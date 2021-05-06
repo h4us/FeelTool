@@ -3,7 +3,7 @@ const { join } = require('path');
 const { format } = require('url');
 
 // Packages
-const { BrowserWindow, app, ipcMain, session } = require('electron');
+const { BrowserWindow, app, ipcMain, session, systemPreferences } = require('electron');
 const isDev = require('electron-is-dev');
 const prepareNext = require('electron-next');
 
@@ -42,6 +42,16 @@ app.on('ready', async () => {
   await uarm.open();
   await uarm.setMode(3);
   await uarm.move(200, 0, 150, 50);
+
+  if (/^(darwin|win).*$/.test(process.platform)) {
+    console.info('need system preferences check');
+
+    if (systemPreferences.getMediaAccessStatus('camera') !== 'granted') {
+      await systemPreferences.askForMediaAccess('camera');
+    }
+  } else {
+    console.info('skip');
+  }
 
   const mainWindow = new BrowserWindow({
     width: 1280,
