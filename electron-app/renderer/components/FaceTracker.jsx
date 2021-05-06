@@ -34,22 +34,26 @@ export default function FaceTracker() {
   const [loadStatus, setLoadStatus] = useState('');
 
   const changeDebugMode = () => {
-    console.log(debugFlagRef.current.checked);
+    console.info('debug draw : ', debugFlagRef.current.checked);
   };
 
   useEffect(() => {
     gumAV();
 
     // 1.
-    const socket = io('http://0.0.0.0:9999', {
-      path: '/internal-app/socket.io'
-    });
+    let socket = false;
     let frameNum = 0;
 
-    socket.on('connect', () => {
-      console.info('connect', socket.id);
-      isSocketConnectedRef.current = true;
-    });
+    if (window.electron.withSocketIO) {
+      socket = io('http://0.0.0.0:9999', {
+        path: '/internal-app/socket.io'
+      });
+
+      socket.on('connect', () => {
+        console.info('connect', socket.id);
+        isSocketConnectedRef.current = true;
+      });
+    }
 
     const av = document.querySelector("gum-av");
     const canvas = document.querySelector("canvas");
@@ -195,16 +199,13 @@ export default function FaceTracker() {
         if (frameNum % 15 == 0) {
           console.log('tick', angle, Math.min(dy * 2 + Math.max(track.position.y, 0), 180));
           if (isSocketConnectedRef.current) {
-
-            // --
             socket.emit('tracking', angle, 0, Math.min(dy * 2 + Math.max(track.position.y + 20, 30), 180));
-
-            window.electron.ipcRenderer.send(
-              'tracking',
-              [angle, 0, Math.min(dy * 2 + Math.max(track.position.y + 20, 30), 180)]
-            );
-            // --
           }
+
+          window.electron.ipcRenderer.send(
+            'tracking',
+            [angle, 0, Math.min(dy * 2 + Math.max(track.position.y + 20, 30), 180)]
+          );
         }
       }
 
@@ -272,7 +273,7 @@ export default function FaceTracker() {
       </div>
 
       <div style={{position:'fixed', top: 0, left:0, background: 'rgba(255,255,255,.8)', padding:'0.25rem', fontSize:'0.8rem'}}>
-        <p>socket.io status: {isSocketConnectedRef.current ? 'connected!' : '--'}</p>
+        <p>socket.io status: {isSocketConnectedRef.current ? 'connected' : '--'}</p>
         <p>model status: {loadStatus}</p>
         <div>
           <label>debug draw <input ref={debugFlagRef} type="checkbox" onClick={() => changeDebugMode()} /></label>
