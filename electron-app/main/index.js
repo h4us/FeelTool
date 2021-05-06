@@ -13,7 +13,7 @@ const fastify = require('fastify')({
 });
 
 // const serialport = require('serialport');
-const { uArmSDK, findPort } = require('../uarm-sdk-javascript');
+const { uArmSDK, findPort } = require('uarm-sdk-javascript');
 const regexp = new RegExp(/Arduino/i);
 const acceptPortFn = (port) => regexp.test(port.manufacturer);
 let uarm = null;

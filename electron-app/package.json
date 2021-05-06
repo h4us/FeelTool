@@ -37,7 +37,7 @@
     "fastify-plugin": "^3.0.0",
     "fastify-socket.io": "^2.0.0",
     "fastify-static": "^4.0.1",
-    "serialport": "^9.0.7"
+    "uarm-sdk-javascript": "github:h4us/uarm-sdk-javascript#latest-node-serialport"
   },
   "author": "HAUS inc.",
   "license": "MIT"
