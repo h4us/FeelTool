@@ -61,7 +61,7 @@ class SerialCommunication {
     }
 
     this.serialport.write(`${line}\n`);
-    this.serialport.drain((e) => console.erro(e));
+    this.serialport.drain((e) => console.error(e));
   }
 }
 

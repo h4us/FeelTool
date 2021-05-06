@@ -270,7 +270,6 @@ class uArmSDK {
     return new Promise((resolve, reject) => {
       const command = `G0 X${x.toFixed(4)} Y${y.toFixed(4)} Z${z.toFixed(4)} F${speed || this.defaultSpeed}`;
       this.sendGCode(command, (error, data) => {
-        console.log('move:', data);
         if (error) {
           return reject(error);
         }
@@ -292,10 +291,13 @@ class uArmSDK {
    */
   movePolar(stretch, rotation, height, speed) {
     return new Promise((resolve, reject) => {
-      const command = `G2201 S${stretch} R${rotation} H${height} F${speed || this.defaultSpeed}`;
+      const command = `G2201 S${stretch.toFixed(4)} R${rotation.toFixed(4)} H${height.toFixed(4)} F${speed || this.defaultSpeed}`;
       this.sendGCode(command, (error, data) => {
         if (error) {
           return reject(error);
+        }
+        if (!data.startsWith('ok')) {
+          return reject(`Didn't get "ok" as response, got ${data}`);
         }
         resolve(data);
       });
@@ -562,21 +564,22 @@ class uArmSDK {
     });
   }
 
-  getIsMoving() {
+
+  /**
+   * -
+   */
+  setMode(mode) {
     return new Promise((resolve, reject) => {
-      this.sendGCode('M2200', (error, data) => {
+      this.sendG(`M2400 S${mode}`, (error, data) => {
         if (error) {
           return reject(error);
         }
+
         if (!data.startsWith('ok')) {
           return reject(`Didn't get "ok" as response, got ${data}`);
         }
-        const regexp = new RegExp(/^ok\sV([0123]+)/);
-        const matches = regexp.exec(data);
-        if (!matches) {
-          return reject(`Unable to parse response: ${data}`);
-        }
-        resolve(parseInt(matches[1]));
+
+        resolve(mode);
       });
     });
   }

@@ -12,7 +12,7 @@ sio = socketio.AsyncClient(reconnection=True)
 
 try:
   swift = SwiftAPI(filters={'hwid': 'USB VID:PID=2341:0042'}, callback_thread_pool_size=2)
-  swift.waiting_ready(timeout=5)
+  swift.waiting_ready(timeout=10)
 
   device_info = swift.get_device_info()
   print(device_info)
@@ -26,7 +26,7 @@ try:
   #     # swift.set_speed_factor(0.0005)
 except Exception:
   swift = False
-  print('swit uArm notconnected')
+  print('swift uArm not connected')
 
 @sio.event
 async def connect():
