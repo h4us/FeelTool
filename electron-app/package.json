@@ -17,6 +17,7 @@
       "renderer/out"
     ],
     "mac": {
+      "hardenedRuntime": false,
       "extendInfo": {
         "NSCameraUsageDescription": "Please give access to your webcam"
       }
