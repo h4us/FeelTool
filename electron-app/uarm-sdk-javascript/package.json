@@ -1,0 +1,34 @@
+{
+  "name": "uarm-sdk-javascript",
+  "version": "1.0.0",
+  "description": "Javascript SDK to controlling your uArm Swift Pro.",
+  "main": "index.js",
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "dependencies": {
+    "serialport": "^7.1.5"
+  },
+  "devDependencies": {
+    "eslint": "^6.5.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/antonhedstrom/uarm-sdk-javascript.git"
+  },
+  "keywords": [
+    "uarm",
+    "swift",
+    "swift pro",
+    "sdk"
+  ],
+  "author": "Anton Hedström",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/antonhedstrom/uarm-sdk-javascript/issues"
+  },
+  "homepage": "https://github.com/antonhedstrom/uarm-sdk-javascript#readme"
+}

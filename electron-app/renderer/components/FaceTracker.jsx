@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 
 import { io } from 'socket.io-client';
+// import * as serialport from 'serialport';
 
 import gumAV from '../lib/gum-av';
 
@@ -30,6 +31,14 @@ import { OrbitControls } from "../lib/OrbitControls.js";
 export default function FaceTracker() {
   const isSocketConnectedRef = useRef(false);
   const [loadStatus, setLoadStatus] = useState('');
+
+
+  const openSerialPort = async () => {
+    // const pl = await serialport.list();
+    // console.log(pl);
+    const res = await window.electron.ipcRenderer.invoke('serialport', 100);
+    console.log(res);
+  };
 
   useEffect(() => {
     gumAV();
@@ -203,10 +212,17 @@ export default function FaceTracker() {
         let angle = (e.y + (Math.PI / 2)) * 180 / Math.PI;
         angle = (angle < 0) ? angle + 360 : angle;
 
-        if (frameNum % 20 == 0) {
+        if (frameNum % 30 == 0) {
           console.log('tick', angle, Math.min(dy * 2 + Math.max(track.position.y, 0), 180));
           if (isSocketConnectedRef.current) {
+
+            // --
             socket.emit('tracking', angle, 0, Math.min(dy * 2 + Math.max(track.position.y + 20, 30), 180));
+            window.electron.ipcRenderer.send(
+              'tracking',
+              [angle, 0, Math.min(dy * 2 + Math.max(track.position.y + 20, 30), 180)]
+            );
+            // --
           }
         }
       }
@@ -284,6 +300,9 @@ export default function FaceTracker() {
       <div style={{position:'fixed', top: 0, left:0, background: 'rgba(255,255,255,.8)', padding:'0.25rem', fontSize:'0.8rem'}}>
         <p>socket.io status: {isSocketConnectedRef.current ? 'connected!' : '--'}</p>
         <p>model status: {loadStatus}</p>
+        <div>
+          <button onClick={() => openSerialPort()}>open serial port</button>
+        </div>
       </div>
     </>
   );

@@ -1,30 +1,58 @@
 // Native
-const { join } = require('path')
-const { format } = require('url')
+const { join } = require('path');
+const { format } = require('url');
 
 // Packages
-const { BrowserWindow, app, ipcMain } = require('electron')
-const isDev = require('electron-is-dev')
-const prepareNext = require('electron-next')
+const { BrowserWindow, app, ipcMain, session } = require('electron');
+const isDev = require('electron-is-dev');
+const prepareNext = require('electron-next');
 
 const fastify = require('fastify')({
   logger: true,
   ignoreTrailingSlash: true
 });
 
+// const serialport = require('serialport');
+const { uArmSDK, findPort } = require('../uarm-sdk-javascript');
+const regexp = new RegExp(/Arduino/i);
+const acceptPortFn = (port) => regexp.test(port.manufacturer);
+let uarm = null;
+
 // Prepare the renderer once the app is ready
 app.on('ready', async () => {
-  await prepareNext('./renderer')
+  await prepareNext('./renderer');
+
+  // session.fromPartition('serial-partition').setPermissionCheckHandler((webContents, permission) => {
+  //   if (permission === 'serial') {
+  //     return true;
+  //   }
+
+  //   return false;
+  // });
+
+  const port = await findPort(acceptPortFn);
+  uarm = new uArmSDK({
+    port,
+    autoOpen: false,
+    onError: (error) => {
+      console.log("uArm Error: ", error);
+    },
+  });
+
+  await uarm.open();
+
+  const cMode = await uarm.getCurrentMode();
+  console.log('current mode -> ', cMode);
 
   const mainWindow = new BrowserWindow({
     width: 1280,
     height: 720,
     webPreferences: {
-      nodeIntegration: false,
+      nodeIntegration: true,
       preload: join(__dirname, 'preload.js'),
     },
     devTools: true
-  })
+  });
 
   const url = isDev
     ? 'http://localhost:8000'
@@ -32,9 +60,9 @@ app.on('ready', async () => {
         pathname: join(__dirname, '../renderer/out/index.html'),
         protocol: 'file:',
         slashes: true,
-      })
+    });
 
-  mainWindow.loadURL(url)
+  mainWindow.loadURL(url);
 });
 
 // Quit the app once all windows are closed
@@ -42,7 +70,38 @@ app.on('window-all-closed', app.quit);
 
 // listen the channel `message` and resend the received message to the renderer process
 ipcMain.on('message', (event, message) => {
-  event.sender.send('message', message)
+  // console.log(event, message);
+  // event.sender.send('message', message);
+});
+
+ipcMain.on('tracking', (event, message) => {
+  console.log(message);
+  const [angle = 0 , dx = 0, dy = 0] = message;
+  if (uarm) {
+    // uarm.movePolar(0, angle, dy, 250);
+    // uarm.move(0, dy, 0, 100);
+    (async() => {
+      const ps = await uarm.getPowerStatus();
+      console.log('power status?', ps);
+    })();
+  }
+});
+
+ipcMain.handle('serialport', async(event, ...args) => {
+  // const port = await findPort(acceptPortFn);
+  // const uarm = new uArmSDK({
+  //   port,
+  //   autoOpen: false,
+  //   onError: (error) => {
+  //     console.log("uArm Error: ", error);
+  //   },
+  // });
+
+  // await uarm.open();
+  // const position = await uarm.getPosition();
+  // console.log("uArm current position is: ", position);
+
+  return Promise.resolve(fp);
 });
 
 fastify

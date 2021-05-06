@@ -1,4 +1,4 @@
-const { ipcRenderer, contextBridge } = require('electron')
+const { ipcRenderer, contextBridge } = require('electron');
 
 contextBridge.exposeInMainWorld('electron', {
   message: {
@@ -6,4 +6,5 @@ contextBridge.exposeInMainWorld('electron', {
     on: (handler) => ipcRenderer.on('message', handler),
     off: (handler) => ipcRenderer.off('message', handler),
   },
-})
+  ipcRenderer
+});

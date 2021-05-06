@@ -22,7 +22,7 @@ import { FaceMeshFaceGeometry } from "../../js/face.js";
 import { OrbitControls } from "../../third_party/OrbitControls.js";
 
 const socket = io('http://localhost:8080', {
-  path: '/app/socket.io'
+  path: '/internal-app/socket.io'
 });
 let isSocketConnected = false;
 let frameNum = 0;

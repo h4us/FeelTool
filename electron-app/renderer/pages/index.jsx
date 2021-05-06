@@ -5,23 +5,23 @@ import Head from 'next/head';
 import FaceTracker from '../components/FaceTracker';
 
 export default function IndexPage() {
-  const [input, setInput] = useState('');
+  // const [input, setInput] = useState('');
   const [message, setMessage] = useState(null);
 
-  useEffect(() => {
-    const handleMessage = (event, message) => setMessage(message);
-    window.electron.message.on(handleMessage);
+  // useEffect(() => {
+  //   const handleMessage = (event, message) => setMessage(message);
+  //   window.electron.message.on(handleMessage);
 
-    return () => {
-      window.electron.message.off(handleMessage);
-    };
-  }, []);
+  //   return () => {
+  //     window.electron.message.off(handleMessage);
+  //   };
+  // }, []);
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    window.electron.message.send(input);
-    setMessage(null);
-  };
+  // const handleSubmit = (event) => {
+  //   event.preventDefault();
+  //   window.electron.message.send(input);
+  //   setMessage(null);
+  // };
 
   return (
     <>
