@@ -39,7 +39,7 @@ app.on('ready', async () => {
     },
   });
 
-  await uarm.open();
+  // await uarm.open();
 
   const cMode = await uarm.getCurrentMode();
   console.log('current mode -> ', cMode);
@@ -79,11 +79,14 @@ ipcMain.on('tracking', (event, message) => {
   const [angle = 0 , dx = 0, dy = 0] = message;
   if (uarm) {
     // uarm.movePolar(0, angle, dy, 250);
-    uarm.move(0, dy, 0, 100);
-    // (async() => {
-    //   const ps = await uarm.getPowerStatus();
-    //   console.log('power status?', ps);
-    // })();
+    (async() => {
+      const m = await uarm.getIsMoving();
+      console.log('moving?', m);
+
+      if (!m) {
+        uarm.move(0, dy, 0, 1);
+      }
+    })();
   }
 });
 

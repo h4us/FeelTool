@@ -561,6 +561,26 @@ class uArmSDK {
       });
     });
   }
+
+  getIsMoving() {
+    return new Promise((resolve, reject) => {
+      this.sendGCode('M2200', (error, data) => {
+        if (error) {
+          return reject(error);
+        }
+        if (!data.startsWith('ok')) {
+          return reject(`Didn't get "ok" as response, got ${data}`);
+        }
+        const regexp = new RegExp(/^ok\sV([0123]+)/);
+        const matches = regexp.exec(data);
+        if (!matches) {
+          return reject(`Unable to parse response: ${data}`);
+        }
+        resolve(parseInt(matches[1]));
+      });
+    });
+  }
+
 }
 
 module.exports = uArmSDK;
