@@ -15,11 +15,19 @@
     "files": [
       "main",
       "renderer/out"
-    ]
+    ],
+    "mac": {
+      "hardenedRuntime": false,
+      "extendInfo": {
+        "NSCameraUsageDescription": "Please give access to your webcam"
+      }
+    }
   },
   "devDependencies": {
-    "electron": "^12.0.2",
-    "electron-builder": "^22.10.5",
+    "@types/electron": "^1.6.10",
+    "electron": "^12.0.6",
+    "electron-builder": "^22.11.1",
+    "electron-rebuild": "^2.3.5",
     "next": "latest",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
@@ -34,7 +42,8 @@
     "fastify-cors": "^6.0.0",
     "fastify-plugin": "^3.0.0",
     "fastify-socket.io": "^2.0.0",
-    "fastify-static": "^4.0.1"
+    "fastify-static": "^4.0.1",
+    "uarm-sdk-javascript": "github:h4us/uarm-sdk-javascript#latest-node-serialport"
   },
   "author": "HAUS inc.",
   "license": "MIT"

@@ -7,5 +7,5 @@ contextBridge.exposeInMainWorld('electron', {
     off: (handler) => ipcRenderer.off('message', handler),
   },
   ipcRenderer,
-  withSocketIO: true
+  withSocketIO: false
 });

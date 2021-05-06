@@ -11,7 +11,7 @@ fastify
     prefix: '/app/'
   })
   .register(require('fastify-socket.io'), {
-    path: '/app/socket.io',
+    path: '/internal-app/socket.io',
     origins: ['*']
   });
 
