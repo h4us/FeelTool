@@ -30,14 +30,11 @@ import { OrbitControls } from "../lib/OrbitControls.js";
 
 export default function FaceTracker() {
   const isSocketConnectedRef = useRef(false);
+  const debugFlagRef = useRef();
   const [loadStatus, setLoadStatus] = useState('');
 
-
-  const openSerialPort = async () => {
-    // const pl = await serialport.list();
-    // console.log(pl);
-    const res = await window.electron.ipcRenderer.invoke('serialport', 100);
-    console.log(res);
+  const changeDebugMode = () => {
+    console.log(debugFlagRef.current.checked);
   };
 
   useEffect(() => {
@@ -101,31 +98,14 @@ export default function FaceTracker() {
     resize();
     renderer.render(scene, camera);
 
-    // 2.
-    const colorTexture = new TextureLoader().load('mesh_map.jpg');
-    const aoTexture = new TextureLoader().load('ao.jpg');
-    const alphaTexture = new TextureLoader().load('mask.png');
-
     const wireframeMaterial = new MeshBasicMaterial({
-      color: 0xff00ff,
+      color: 0xffffff,
       wireframe: true,
-    });
-
-    const material = new MeshStandardMaterial({
-      color: 0x808080,
-      roughness: 0.8,
-      metalness: 0.1,
-      alphaMap: alphaTexture,
-      aoMap: aoTexture,
-      map: colorTexture,
-      roughnessMap: colorTexture,
-      transparent: true,
-      side: DoubleSide,
     });
 
     const faceGeometry = new FaceMeshFaceGeometry();
 
-    const mask = new Mesh(faceGeometry, material);
+    const mask = new Mesh(faceGeometry, wireframeMaterial);
     scene.add(mask);
     mask.receiveShadow = mask.castShadow = true;
 
@@ -156,7 +136,7 @@ export default function FaceTracker() {
     scene.add(ambientLight);
 
     const noseMaterial = new MeshStandardMaterial({
-      color: 0xff2010,
+      color: 0xff2020,
       roughness: 0.4,
       metalness: 0.1,
       transparent: true,
@@ -167,7 +147,7 @@ export default function FaceTracker() {
     scene.add(nose);
     nose.scale.setScalar(2);
 
-    let wireframe = false;
+    let wireframe = true;
     let flipCamera = true;
 
     async function render(model) {
@@ -228,19 +208,12 @@ export default function FaceTracker() {
         }
       }
 
-      if (wireframe) {
+      if (debugFlagRef.current && debugFlagRef.current.checked) {
         renderer.render(scene, camera);
+      } else {
         renderer.autoClear = false;
         renderer.clear(false, true, false);
-
-        mask.material = wireframeMaterial;
-        renderer.render(scene, camera);
-        mask.material = material;
-
         renderer.autoClear = true;
-      } else {
-        // Render the scene normally.
-        renderer.render(scene, camera);
       }
 
       frameNum++;
@@ -302,7 +275,7 @@ export default function FaceTracker() {
         <p>socket.io status: {isSocketConnectedRef.current ? 'connected!' : '--'}</p>
         <p>model status: {loadStatus}</p>
         <div>
-          <button onClick={() => openSerialPort()}>open serial port</button>
+          <label>debug draw <input ref={debugFlagRef} type="checkbox" onClick={() => changeDebugMode()} /></label>
         </div>
       </div>
     </>
