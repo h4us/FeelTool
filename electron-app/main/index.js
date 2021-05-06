@@ -39,7 +39,7 @@ app.on('ready', async () => {
     },
   });
 
-  // await uarm.open();
+  await uarm.open();
 
   const cMode = await uarm.getCurrentMode();
   console.log('current mode -> ', cMode);

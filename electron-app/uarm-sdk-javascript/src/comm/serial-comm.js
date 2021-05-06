@@ -60,7 +60,10 @@ class SerialCommunication {
       return;
     }
 
-    this.serialport.write(`${line}\n`);
+    this.serialport.write(`${line}\n`, (e, wb) => {
+      console.log(e, wb);
+      this.serialport.flush();
+    });
   }
 }
 
