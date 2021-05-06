@@ -74,12 +74,11 @@ ipcMain.on('message', (event, message) => {
 });
 
 ipcMain.on('tracking', (event, message) => {
-  console.log(message);
-  const [angle = 0 , dx = 0, dy = 0] = message;
+  const [angle = 90 , dx = 200, dy = 150] = message;
 
   if (uarm) {
-    // uarm.movePolar(0, angle, dy, 250);
-    uarm.move(0, dy, 0, 200);
+    uarm.movePolar(200, angle, dy, 200);
+    // uarm.move(0, dy, 0, 200);
   }
 });
 

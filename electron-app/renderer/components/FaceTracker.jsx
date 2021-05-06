@@ -212,12 +212,13 @@ export default function FaceTracker() {
         let angle = (e.y + (Math.PI / 2)) * 180 / Math.PI;
         angle = (angle < 0) ? angle + 360 : angle;
 
-        if (frameNum % 30 == 0) {
+        if (frameNum % 15 == 0) {
           console.log('tick', angle, Math.min(dy * 2 + Math.max(track.position.y, 0), 180));
           if (isSocketConnectedRef.current) {
 
             // --
             socket.emit('tracking', angle, 0, Math.min(dy * 2 + Math.max(track.position.y + 20, 30), 180));
+
             window.electron.ipcRenderer.send(
               'tracking',
               [angle, 0, Math.min(dy * 2 + Math.max(track.position.y + 20, 30), 180)]
