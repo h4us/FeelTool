@@ -13,4 +13,4 @@ uarm-python-sdk = {git = "https://github.com/uArm-Developer/uArm-Python-SDK.git"
 aiohttp = "*"
 
 [requires]
-python_version = ">=3.8.6"
+python_version = "3.8.6"
