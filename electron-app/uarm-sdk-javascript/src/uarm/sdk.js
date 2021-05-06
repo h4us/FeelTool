@@ -570,7 +570,7 @@ class uArmSDK {
    */
   setMode(mode) {
     return new Promise((resolve, reject) => {
-      this.sendG(`M2400 S${mode}`, (error, data) => {
+      this.sendGCode(`M2400 S${mode}`, (error, data) => {
         if (error) {
           return reject(error);
         }
