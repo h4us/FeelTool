@@ -1,34 +1,41 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import Head from 'next/head';
 
 import FaceTracker from '../components/FaceTracker';
+import VideoSource from '../components/VideoSource';
 
 export default function IndexPage() {
-  // const [input, setInput] = useState('');
-  const [message, setMessage] = useState(null);
+  const [dropPane, setDropPane] = useState(false);
 
-  // useEffect(() => {
-  //   const handleMessage = (event, message) => setMessage(message);
-  //   window.electron.message.on(handleMessage);
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDropPane(true);
+  };
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDropPane(false);
+  };
 
-  //   return () => {
-  //     window.electron.message.off(handleMessage);
-  //   };
-  // }, []);
+  const handleDrop = useCallback((e) => { console.log(e); }, []);
 
-  // const handleSubmit = (event) => {
-  //   event.preventDefault();
-  //   window.electron.message.send(input);
-  //   setMessage(null);
-  // };
+  useEffect(() => {
+    document.addEventListener('dragover', handleDragOver);
+    document.addEventListener('dragleave', handleDragLeave);
+
+    return () => {
+      document.removeEventListener('dragover', handleDragOver);
+      document.removeEventListener('dragleave', handleDragLeave);
+    };
+  }, []);
 
   return (
     <>
       <Head>
         <script src="./tf-core.js"></script>
         <script src="./tf-converter.js"></script>
-
         <script src="./tf-backend-cpu.js"></script>
         <script src="./tf-backend-wasm.js"></script>
         <script src="./tf-backend-webgl.js"></script>
@@ -36,17 +43,14 @@ export default function IndexPage() {
         <script src="./facemesh"></script>
       </Head>
 
-      {message && <p>{message}</p>}
-
+      <VideoSource />
       <FaceTracker />
 
-      {/* <form onSubmit={handleSubmit}> */}
-      {/*   <input */}
-      {/*     type="text" */}
-      {/*     value={input} */}
-      {/*     onChange={(e) => setInput(e.target.value)} */}
-      {/*   /> */}
-      {/* </form> */}
+      <div
+        className={ !dropPane ? 'drop-pane' : 'drop-pane ready' }
+        onDrop={handleDrop}>
+        <h3>Drop Video File Here</h3>
+      </div>
     </>
   );
 }

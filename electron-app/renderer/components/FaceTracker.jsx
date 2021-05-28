@@ -26,7 +26,6 @@ import {
 } from 'three';
 
 import { FaceMeshFaceGeometry } from "../lib/face.js";
-import { OrbitControls } from "../lib/OrbitControls.js";
 
 export default function FaceTracker() {
   const isSocketConnectedRef = useRef(false);
@@ -35,6 +34,10 @@ export default function FaceTracker() {
 
   const changeDebugMode = () => {
     console.info('debug draw : ', debugFlagRef.current.checked);
+  };
+
+  const handleMessage = (e, payload) => {
+    console.log(payload);
   };
 
   useEffect(() => {
@@ -60,7 +63,6 @@ export default function FaceTracker() {
     const status = document.querySelector("#status");
 
     const renderer = new WebGLRenderer({ antialias: true, alpha: true, canvas });
-    // renderer.setClearColor(0x202020);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = PCFSoftShadowMap;
@@ -71,7 +73,7 @@ export default function FaceTracker() {
     const debugCamera = new PerspectiveCamera(75, 1, 0.1, 1000);
     debugCamera.position.set(300, 300, 300);
     debugCamera.lookAt(scene.position);
-    const controls = new OrbitControls(debugCamera, renderer.domElement);
+    // const controls = new OrbitControls(debugCamera, renderer.domElement);
 
     let width = 0;
     let height = 0;
@@ -197,15 +199,18 @@ export default function FaceTracker() {
         angle = (angle < 0) ? angle + 360 : angle;
 
         if (frameNum % 15 == 0) {
-          console.log('tick', angle, Math.min(dy * 2 + Math.max(track.position.y, 0), 180));
+          // console.log('tick', angle, Math.min(dy * 2 + Math.max(track.position.y, 0), 180));
           if (isSocketConnectedRef.current) {
             socket.emit('tracking', angle, 0, Math.min(dy * 2 + Math.max(track.position.y + 20, 30), 180));
           }
 
-          window.electron.ipcRenderer.send(
-            'tracking',
-            [angle, 0, Math.min(dy * 2 + Math.max(track.position.y + 20, 30), 180)]
-          );
+          // window.electron.ipcRenderer.send(
+          //   'tracking',
+          //   [angle, 0, Math.min(dy * 2 + Math.max(track.position.y + 20, 30), 180)]
+          // );
+          window.electron.sendTrackingData([
+            angle, 0, Math.min(dy * 2 + Math.max(track.position.y + 20, 30), 180)
+          ]);
         }
       }
 
@@ -222,7 +227,7 @@ export default function FaceTracker() {
     }
 
     async function init() {
-      console.log('post init');
+      window.electron.message.on(handleMessage);
 
       setTimeout(() => {
         (async () => {
@@ -253,11 +258,13 @@ export default function FaceTracker() {
         })();
 
       }, 2000);
-
-      console.log('init done');
     }
 
     init();
+
+    return () => {
+      window.electron.message.off(handleMessage);
+    };
   }, []);
 
   return (

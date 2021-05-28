@@ -3,7 +3,7 @@ const { join } = require('path');
 const { format } = require('url');
 
 // Packages
-const { BrowserWindow, app, ipcMain, session, systemPreferences } = require('electron');
+const { BrowserWindow, app, ipcMain, systemPreferences, Menu } = require('electron');
 const isDev = require('electron-is-dev');
 const prepareNext = require('electron-next');
 
@@ -11,7 +11,6 @@ const fastify = require('fastify')({
   logger: true,
   ignoreTrailingSlash: true
 });
-
 // const serialport = require('serialport');
 const { uArmSDK, findPort } = require('uarm-sdk-javascript');
 const regexp = new RegExp(/Arduino/i);
@@ -19,6 +18,8 @@ const acceptPortFn = (port) => {
   // return regexp.test(port.manufacturer);
   return port.vendorId == '2341' && port.productId == '0042';
 };
+
+const customAppMenu = require('./customAppMenu');
 
 // -- TODO:
 let uarm = null;
@@ -33,22 +34,29 @@ app.on('ready', async () => {
   //   if (permission === 'serial') {
   //     return true;
   //   }
-
   //   return false;
   // });
 
-  const port = await findPort(acceptPortFn);
-  uarm = new uArmSDK({
-    port,
-    autoOpen: false,
-    onError: (error) => {
-      console.log("uArm Error: ", error);
-    },
-  });
+  Menu.setApplicationMenu(customAppMenu);
 
-  await uarm.open();
-  await uarm.setMode(3);
-  await uarm.move(200, 0, 150, 50);
+  const port = await findPort(acceptPortFn).catch(err => err);
+
+  if (typeof port === 'object' && port['path']) {
+    uarm = new uArmSDK({
+      port,
+      autoOpen: false,
+      onError: (error) => {
+        console.log("uArm Error: ", error);
+      },
+    });
+
+    await uarm.open();
+    await uarm.setMode(3);
+    await uarm.move(200, 0, 150, 50);
+  } else {
+    // TODO
+    console.error('uarm not found!');
+  }
 
   if (/^(darwin|win).*$/.test(process.platform)) {
     console.info('need system preferences check');
@@ -56,19 +64,23 @@ app.on('ready', async () => {
     if (systemPreferences.getMediaAccessStatus('camera') !== 'granted') {
       await systemPreferences.askForMediaAccess('camera');
     }
-  } else {
-    console.info('skip');
   }
 
   const mainWindow = new BrowserWindow({
     width: 1280,
     height: 720,
     webPreferences: {
-      nodeIntegration: true,
       preload: join(__dirname, withSocketIO ? 'preload.js' : 'preload-no-sio.js'),
-    },
-    devTools: true
+    }
   });
+
+  mainWindow.webContents.session.protocol.registerFileProtocol('assets', (req, cb) => {
+    cb({ path: req.url.substr(8) });
+  });
+
+  if (isDev) {
+    mainWindow.webContents.on('did-finish-load', _ => mainWindow.webContents.openDevTools());
+  }
 
   const url = isDev
     ? 'http://localhost:8000'
@@ -86,7 +98,7 @@ app.on('window-all-closed', app.quit);
 
 // listen the channel `message` and resend the received message to the renderer process
 ipcMain.on('message', (event, message) => {
-  // console.log(event, message);
+  console.log(event, message);
   // event.sender.send('message', message);
 });
 
