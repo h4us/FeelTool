@@ -5,6 +5,8 @@ import { io } from 'socket.io-client';
 
 import gumAV from '../lib/gum-av';
 
+import VideoSource from './VideoSource';
+
 import {
   WebGLRenderer,
   PCFSoftShadowMap,
@@ -30,6 +32,8 @@ import { FaceMeshFaceGeometry } from "../lib/face.js";
 export default function FaceTracker() {
   const isSocketConnectedRef = useRef(false);
   const debugFlagRef = useRef();
+  const videoSourceRef = useRef(null);
+
   const [loadStatus, setLoadStatus] = useState('');
 
   const changeDebugMode = () => {
@@ -231,7 +235,8 @@ export default function FaceTracker() {
 
       setTimeout(() => {
         (async () => {
-          await Promise.all([tf.setBackend("webgl"), av.ready()]);
+          // await Promise.all([tf.setBackend("webgl"), av.ready()]);
+          await Promise.all([tf.setBackend("webgl")]);
           setLoadStatus("Loading model...");
           const model = await facemesh.load({ maxFaces: 1 });
           setLoadStatus('Detecting face...');
@@ -257,6 +262,8 @@ export default function FaceTracker() {
           render(model);
         })();
 
+        console.log(videoSourceRef.current);
+
       }, 2000);
     }
 
@@ -271,11 +278,6 @@ export default function FaceTracker() {
     <>
       <div id="container">
         <gum-av></gum-av>
-        {/* <div style="width:100vw; height:100vh"> */}
-        {/*   <video id="recorded" autoplay muted loop style="margin:0 auto; display:block; height:100%;"> */}
-        {/*     <source src="/app/test.webm" /> */}
-        {/*   </video> */}
-        {/* </div> */}
         <canvas id="canvas"></canvas>
       </div>
 
@@ -285,6 +287,8 @@ export default function FaceTracker() {
         <div>
           <label>debug draw <input ref={debugFlagRef} type="checkbox" onClick={() => changeDebugMode()} /></label>
         </div>
+
+        <VideoSource ref={videoSourceRef}/>
       </div>
     </>
   );

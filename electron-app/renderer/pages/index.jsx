@@ -3,7 +3,6 @@ import { useState, useEffect, useCallback } from 'react';
 import Head from 'next/head';
 
 import FaceTracker from '../components/FaceTracker';
-import VideoSource from '../components/VideoSource';
 
 export default function IndexPage() {
   const [dropPane, setDropPane] = useState(false);
@@ -43,7 +42,6 @@ export default function IndexPage() {
         <script src="./facemesh"></script>
       </Head>
 
-      <VideoSource />
       <FaceTracker />
 
       <div

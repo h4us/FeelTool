@@ -44,8 +44,7 @@ const customMenuTpl = [
           const fp = await dialog.showOpenDialog({ filters: [
             { name: 'html5 video', extensions: ['webm', 'mp4', 'ogv'] }
           ]});
-          win.webContents.send('message', fp.filePaths);
-          console.log(fp);
+          win.webContents.send('message',`assets://${fp.filePaths[0]}`);
         }
       }
     ]
