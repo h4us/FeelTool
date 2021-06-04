@@ -75,7 +75,10 @@ app.on('ready', async () => {
   });
 
   mainWindow.webContents.session.protocol.registerFileProtocol('assets', (req, cb) => {
-    cb({ path: req.url.substr(8) });
+    cb({
+      // ! - If a file name contains Non-English characters
+      path: decodeURIComponent(req.url.substr(8))
+    });
   });
 
   if (isDev) {

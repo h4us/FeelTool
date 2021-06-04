@@ -3,6 +3,8 @@ import { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 // import * as serialport from 'serialport';
 
+import { useControls } from 'leva';
+
 import gumAV from '../lib/gum-av';
 
 import VideoSource from './VideoSource';
@@ -43,6 +45,27 @@ export default function FaceTracker() {
   const handleMessage = (e, payload) => {
     console.log(payload);
   };
+
+  const dFlag = useControls({
+    'Debug draw': {
+      value: false,
+      onChange: (v) => {
+        if (debugFlagRef.current) {
+          // TODO:
+          debugFlagRef.current.checked = v;
+        }
+
+        // if (videoSourceRef.current) {
+        //   if (videoSourceRef.current[0]) {
+        //     console.log(videoSourceRef.current[0].videoWidth, videoSourceRef.current[0].videoHeight, videoSourceRef.current[0].src);
+        //   }
+        //   if (videoSourceRef.current[1]) {
+        //     console.log(videoSourceRef.current[1].videoWidth, videoSourceRef.current[1].videoHeight);
+        //   }
+        // }
+      }
+    }
+  });
 
   useEffect(() => {
     gumAV();
@@ -261,9 +284,6 @@ export default function FaceTracker() {
 
           render(model);
         })();
-
-        console.log(videoSourceRef.current);
-
       }, 2000);
     }
 

@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, forwardRef } from 'react';
 
+import { useControls, button } from 'leva';
+
 const VideoSource = forwardRef((props, fwdref) => {
   const [deviceList, setDeviceList] = useState([]);
   const [videoFile, setVideoFile] = useState(null);
@@ -8,10 +10,40 @@ const VideoSource = forwardRef((props, fwdref) => {
   const webcamRef = useRef();
   const videoFileRef = useRef();
 
+  const toLiveCamera = useControls({
+    'Use live camera': button(() => setVideoFile(null)),
+    'Load video file': button(() => console.log('load!'))
+  });
+
   useEffect(() => {
-    if (videoFileRef.current) {
+    if (videoFileRef.current && mediaDevices.current) {
       (async () => {
-        await videoFileRef.current.play().catch(err => console.error(err));
+        if (videoFile) {
+          await videoFileRef.current.play().catch(err => console.error(err));
+        } else {
+          let vsrc = null;
+          for (const device of mediaDevices.current) {
+            switch (device.kind) {
+              case "videoinput":
+                vsrc = device;
+                break;
+            }
+          }
+
+          if (vsrc) {
+            const constraints = {
+              video: { deviceId: vsrc.deviceId },
+            };
+            let stream = null;
+
+            try {
+              stream = await navigator.mediaDevices.getUserMedia(constraints);
+              webcamRef.current.srcObject = stream;
+            } catch (err) {
+              console.error('video source: initialize error');
+            }
+          }
+        }
       })();
     }
   }, [videoFile]);
@@ -54,7 +86,10 @@ const VideoSource = forwardRef((props, fwdref) => {
 
       if (vsrc) {
         const constraints = {
-          video: { deviceId: vsrc.deviceId, width: 500, height: 500 },
+          video: {
+            deviceId: vsrc.deviceId,
+            // width: 500, height: 500
+          },
         };
         let stream = null;
 
