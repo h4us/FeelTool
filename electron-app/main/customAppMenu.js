@@ -41,7 +41,10 @@ const customMenuTpl = [
               { name: 'html5 video', extensions: ['webm', 'mp4', 'ogv'] }
             ]
           });
-          win.webContents.send('message', `assets://${fp.filePaths[0]}`);
+
+          if (!fp.canceled) {
+            win.webContents.send('message', `assets://${fp.filePaths[0]}`);
+          }
         }
       }
     ]

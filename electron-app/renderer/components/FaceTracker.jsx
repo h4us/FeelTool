@@ -152,8 +152,6 @@ export default function FaceTracker() {
       let adjustedWidth;
       let adjustedHeight;
 
-      console.log(videoAspectRatio, windowAspectRatio);
-
       if (videoAspectRatio > windowAspectRatio) {
         adjustedWidth = windowWidth;
         adjustedHeight = windowWidth / videoAspectRatio;

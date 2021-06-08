@@ -16,8 +16,24 @@ const VideoSource = forwardRef((props, fwdref) => {
   // --
   const toLiveCamera = useControls({
     'Use live camera': button(() => setVideoFile(null)),
-    'Load video file': button(() => console.log('load!'))
+    'Load video file': button(() => window.electron.message.send('load'))
   });
+  // --
+
+  // ..
+  const handleResize = () => {
+    const vsrc = videoFileRef.current.src ? videoFileRef.current : webcamRef.current;
+    const videoAspectRatio = vsrc.videoWidth / vsrc.videoHeight;
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    const windowAspectRatio = windowWidth / windowHeight;
+
+    if (videoAspectRatio > windowAspectRatio) {
+      setFitStyle({ width: '100%', height: 'auto' });
+    } else {
+      setFitStyle({ width: 'auto', height: '100%' });
+    }
+  };
   // --
 
   useEffect(() => {
@@ -26,6 +42,7 @@ const VideoSource = forwardRef((props, fwdref) => {
         if (videoFile) {
           await videoFileRef.current.play().catch(err => console.error(err));
 
+          handleResize();
           setCameraIsReady(0);
         } else {
           let vsrc = null;
@@ -51,6 +68,7 @@ const VideoSource = forwardRef((props, fwdref) => {
             }
           }
 
+          handleResize();
           setVideoIsReady(0);
         }
       })();
@@ -63,26 +81,16 @@ const VideoSource = forwardRef((props, fwdref) => {
     };
 
     const handleMesssage = (e, payload) => {
-      if (webcamRef.current && webcamRef.current.srcObject) {
-        webcamRef.current.srcObject.getTracks().forEach((track) => {
-          track.stop();
-        });
-      }
+      console.log(e, payload);
 
-      setVideoFile(payload);
-    };
+      if (typeof payload == 'string' && payload) {
+        if (webcamRef.current && webcamRef.current.srcObject) {
+          webcamRef.current.srcObject.getTracks().forEach((track) => {
+            track.stop();
+          });
+        }
 
-    const handleResize = () => {
-      const vsrc = videoFileRef.current.src ? videoFileRef.current : webcamRef.current;
-      const videoAspectRatio = vsrc.videoWidth / vsrc.videoHeight;
-      const windowWidth = window.innerWidth;
-      const windowHeight = window.innerHeight;
-      const windowAspectRatio = windowWidth / windowHeight;
-
-      if (videoAspectRatio > windowAspectRatio) {
-        setFitStyle({ width: '100%', height: 'auto'});
-      } else {
-        setFitStyle({ width: 'auto', height: '100%'});
+        setVideoFile(payload);
       }
     };
 
@@ -130,6 +138,8 @@ const VideoSource = forwardRef((props, fwdref) => {
         } catch (err) {
           console.error('video source: initialize error');
         }
+
+        handleResize();
       }
     })();
 

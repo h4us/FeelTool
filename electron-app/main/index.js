@@ -3,7 +3,7 @@ const { join } = require('path');
 const { format } = require('url');
 
 // Packages
-const { BrowserWindow, app, ipcMain, systemPreferences, Menu } = require('electron');
+const { BrowserWindow, app, ipcMain, systemPreferences, Menu, dialog } = require('electron');
 const isDev = require('electron-is-dev');
 const prepareNext = require('electron-next');
 
@@ -100,9 +100,18 @@ app.on('ready', async () => {
 app.on('window-all-closed', app.quit);
 
 // listen the channel `message` and resend the received message to the renderer process
-ipcMain.on('message', (event, message) => {
-  console.log(event, message);
-  // event.sender.send('message', message);
+ipcMain.on('message', async (event, message) => {
+  if (message == 'load') {
+    const fp = await dialog.showOpenDialog({
+      filters: [
+        { name: 'html5 video', extensions: ['webm', 'mp4', 'ogv'] }
+      ]
+    });
+
+    if (!fp.canceled) {
+      event.sender.send('message', `assets://${fp.filePaths[0]}`);
+    }
+  }
 });
 
 ipcMain.on('tracking', (event, message) => {
