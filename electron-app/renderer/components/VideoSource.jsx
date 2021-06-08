@@ -14,9 +14,21 @@ const VideoSource = forwardRef((props, fwdref) => {
   const videoFileRef = useRef();
 
   // --
-  const toLiveCamera = useControls({
+  // TODO:
+  const sourceControls = useControls({
     'Use live camera': button(() => setVideoFile(null)),
-    'Load video file': button(() => window.electron.message.send('load'))
+    'Load video file': button(() => window.electron.message.send('load')),
+    'Pause video' : {
+      value: false,
+      onChange: (v) => {
+        const vsrc = videoFileRef.current.src ? videoFileRef.current : webcamRef.current;
+        if (v) {
+          vsrc.pause();
+        } else {
+          vsrc.play();
+        }
+      }
+    }
   });
   // --
 
