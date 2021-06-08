@@ -7,6 +7,7 @@ const VideoSource = forwardRef((props, fwdref) => {
   const [videoFile, setVideoFile] = useState(null);
   const [videoIsReady, setVideoIsReady] = useState(0);
   const [cameraIsReady, setCameraIsReady] = useState(0);
+  const [fitStyle, setFitStyle] = useState({ width: '100%', height: 'auto' });
 
   const mediaDevices = useRef(null);
   const webcamRef = useRef();
@@ -71,6 +72,20 @@ const VideoSource = forwardRef((props, fwdref) => {
       setVideoFile(payload);
     };
 
+    const handleResize = () => {
+      const vsrc = videoFileRef.current.src ? videoFileRef.current : webcamRef.current;
+      const videoAspectRatio = vsrc.videoWidth / vsrc.videoHeight;
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      const windowAspectRatio = windowWidth / windowHeight;
+
+      if (videoAspectRatio > windowAspectRatio) {
+        setFitStyle({ width: '100%', height: 'auto'});
+      } else {
+        setFitStyle({ width: 'auto', height: '100%'});
+      }
+    };
+
     const handleVideoLoaded = _ => setVideoIsReady(1);
     const handleCameraLoaded = _ => setCameraIsReady(1);
 
@@ -79,6 +94,8 @@ const VideoSource = forwardRef((props, fwdref) => {
 
     webcamRef.current.addEventListener('loadeddata', handleCameraLoaded);
     videoFileRef.current.addEventListener('loadeddata', handleVideoLoaded);
+
+    window.addEventListener('resize', handleResize);
 
     (async () => {
       if (!mediaDevices.current) {
@@ -123,6 +140,7 @@ const VideoSource = forwardRef((props, fwdref) => {
       window.electron.message.off(handleMesssage);
       videoFileRef.current.removeEventListener('loadeddata', handleVideoLoaded);
       webcamRef.current.removeEventListener('loadeddata', handleCameraLoaded);
+      window.removeEventListener('resize', handleResize);
 
       fwdref.current = null;
     };
@@ -131,13 +149,13 @@ const VideoSource = forwardRef((props, fwdref) => {
   return (
     <>
       <video
-        style={{ objectFit: 'contain', width: '100%', display: (videoFile ? 'block' : 'none') }}
+        style={{ objectFit: 'contain', display: (videoFile ? 'block' : 'none'), ...fitStyle }}
         ref={videoFileRef}
         src={videoFile}
         data-loaded={videoIsReady}
         autoPlay muted loop ></video>
       <video
-        style={{ objectFit: 'contain', width: '100%', display: (videoFile ? 'none' : 'block') }}
+        style={{ objectFit: 'contain', display: (videoFile ? 'none' : 'block'), ...fitStyle }}
         ref={webcamRef}
         data-loaded={cameraIsReady}
         autoPlay playsInline></video>
