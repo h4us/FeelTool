@@ -5,21 +5,27 @@ import { useControls, button } from 'leva';
 const VideoSource = forwardRef((props, fwdref) => {
   const [deviceList, setDeviceList] = useState([]);
   const [videoFile, setVideoFile] = useState(null);
+  const [videoIsReady, setVideoIsReady] = useState(0);
+  const [cameraIsReady, setCameraIsReady] = useState(0);
 
   const mediaDevices = useRef(null);
   const webcamRef = useRef();
   const videoFileRef = useRef();
 
+  // --
   const toLiveCamera = useControls({
     'Use live camera': button(() => setVideoFile(null)),
     'Load video file': button(() => console.log('load!'))
   });
+  // --
 
   useEffect(() => {
     if (videoFileRef.current && mediaDevices.current) {
       (async () => {
         if (videoFile) {
           await videoFileRef.current.play().catch(err => console.error(err));
+
+          setCameraIsReady(0);
         } else {
           let vsrc = null;
           for (const device of mediaDevices.current) {
@@ -43,6 +49,8 @@ const VideoSource = forwardRef((props, fwdref) => {
               console.error('video source: initialize error');
             }
           }
+
+          setVideoIsReady(0);
         }
       })();
     }
@@ -63,8 +71,14 @@ const VideoSource = forwardRef((props, fwdref) => {
       setVideoFile(payload);
     };
 
+    const handleVideoLoaded = _ => setVideoIsReady(1);
+    const handleCameraLoaded = _ => setCameraIsReady(1);
+
     navigator.mediaDevices.addEventListener('devicechange', handleDeviceChange);
     window.electron.message.on(handleMesssage);
+
+    webcamRef.current.addEventListener('loadeddata', handleCameraLoaded);
+    videoFileRef.current.addEventListener('loadeddata', handleVideoLoaded);
 
     (async () => {
       if (!mediaDevices.current) {
@@ -106,22 +120,28 @@ const VideoSource = forwardRef((props, fwdref) => {
 
     return () => {
       navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange);
+      window.electron.message.off(handleMesssage);
+      videoFileRef.current.removeEventListener('loadeddata', handleVideoLoaded);
+      webcamRef.current.removeEventListener('loadeddata', handleCameraLoaded);
+
       fwdref.current = null;
     };
   }, []);
 
   return (
-    <div style={{ width: '250px' }}>
+    <>
       <video
         style={{ objectFit: 'contain', width: '100%', display: (videoFile ? 'block' : 'none') }}
         ref={videoFileRef}
         src={videoFile}
+        data-loaded={videoIsReady}
         autoPlay muted loop ></video>
       <video
-        style={{ objectFit: 'contain', width: '100%',  display: (videoFile ? 'none' : 'block') }}
+        style={{ objectFit: 'contain', width: '100%', display: (videoFile ? 'none' : 'block') }}
         ref={webcamRef}
+        data-loaded={cameraIsReady}
         autoPlay playsInline></video>
-    </div>
+    </>
   );
 });
 

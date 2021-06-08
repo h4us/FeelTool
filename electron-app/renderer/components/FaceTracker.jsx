@@ -5,8 +5,6 @@ import { io } from 'socket.io-client';
 
 import { useControls } from 'leva';
 
-import gumAV from '../lib/gum-av';
-
 import VideoSource from './VideoSource';
 
 import {
@@ -32,45 +30,35 @@ import {
 import { FaceMeshFaceGeometry } from "../lib/face.js";
 
 export default function FaceTracker() {
-  const isSocketConnectedRef = useRef(false);
-  const debugFlagRef = useRef();
+  const canvasRef = useRef();
   const videoSourceRef = useRef(null);
 
+  const isSocketConnectedRef = useRef(false);
+  const debugFlagRef = useRef({ checked: false });
+  const flipFlagRef = useRef(false);
+
   const [loadStatus, setLoadStatus] = useState('');
+  const [flipFlag, setFlipFlag] = useState(false);
 
-  const changeDebugMode = () => {
-    console.info('debug draw : ', debugFlagRef.current.checked);
-  };
-
-  const handleMessage = (e, payload) => {
-    console.log(payload);
-  };
-
-  const dFlag = useControls({
+  const flags = useControls({
     'Debug draw': {
       value: false,
       onChange: (v) => {
         if (debugFlagRef.current) {
-          // TODO:
           debugFlagRef.current.checked = v;
         }
+      }
+    },
 
-        // if (videoSourceRef.current) {
-        //   if (videoSourceRef.current[0]) {
-        //     console.log(videoSourceRef.current[0].videoWidth, videoSourceRef.current[0].videoHeight, videoSourceRef.current[0].src);
-        //   }
-        //   if (videoSourceRef.current[1]) {
-        //     console.log(videoSourceRef.current[1].videoWidth, videoSourceRef.current[1].videoHeight);
-        //   }
-        // }
+    'Flip': {
+      value: false,
+      onChange: (v) => {
+        flipFlagRef.current = v;
       }
     }
   });
 
   useEffect(() => {
-    gumAV();
-
-    // 1.
     let socket = false;
     let frameNum = 0;
 
@@ -85,11 +73,7 @@ export default function FaceTracker() {
       });
     }
 
-    const av = document.querySelector("gum-av");
-    const canvas = document.querySelector("canvas");
-    const status = document.querySelector("#status");
-
-    const renderer = new WebGLRenderer({ antialias: true, alpha: true, canvas });
+    const renderer = new WebGLRenderer({ antialias: true, alpha: true, canvas: canvasRef.current });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = PCFSoftShadowMap;
@@ -100,33 +84,9 @@ export default function FaceTracker() {
     const debugCamera = new PerspectiveCamera(75, 1, 0.1, 1000);
     debugCamera.position.set(300, 300, 300);
     debugCamera.lookAt(scene.position);
-    // const controls = new OrbitControls(debugCamera, renderer.domElement);
 
     let width = 0;
     let height = 0;
-
-    function resize() {
-      const videoAspectRatio = width / height;
-      const windowWidth = window.innerWidth;
-      const windowHeight = window.innerHeight;
-      const windowAspectRatio = windowWidth / windowHeight;
-      let adjustedWidth;
-      let adjustedHeight;
-      if (videoAspectRatio > windowAspectRatio) {
-        adjustedWidth = windowWidth;
-        adjustedHeight = windowWidth / videoAspectRatio;
-      } else {
-        adjustedWidth = windowHeight * videoAspectRatio;
-        adjustedHeight = windowHeight;
-      }
-      renderer.setSize(adjustedWidth, adjustedHeight);
-      debugCamera.aspect = videoAspectRatio;
-      debugCamera.updateProjectionMatrix();
-    }
-
-    window.addEventListener('resize', () => {
-      resize();
-    });
 
     resize();
     renderer.render(scene, camera);
@@ -180,35 +140,62 @@ export default function FaceTracker() {
     scene.add(nose);
     nose.scale.setScalar(2);
 
-    let wireframe = true;
-    let flipCamera = true;
+    window.addEventListener('resize', resize);
+
+    init();
+
+    function resize() {
+      const videoAspectRatio = width / height;
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      const windowAspectRatio = windowWidth / windowHeight;
+      let adjustedWidth;
+      let adjustedHeight;
+      if (videoAspectRatio > windowAspectRatio) {
+        adjustedWidth = windowWidth;
+        adjustedHeight = windowWidth / videoAspectRatio;
+      } else {
+        adjustedWidth = windowHeight * videoAspectRatio;
+        adjustedHeight = windowHeight;
+      }
+      renderer.setSize(adjustedWidth, adjustedHeight);
+      debugCamera.aspect = videoAspectRatio;
+      debugCamera.updateProjectionMatrix();
+    }
 
     async function render(model) {
-      await av.ready();
+      let vsrc = false;
 
-      av.video.style.transform = flipCamera ? "scaleX(-1)" : "scaleX(1)";
-
-      if (width !== av.video.videoWidth || height !== av.video.videoHeight) {
-        const w = av.video.videoWidth;
-        const h = av.video.videoHeight;
-        camera.left = -0.5 * w;
-        camera.right = 0.5 * w;
-        camera.top = 0.5 * h;
-        camera.bottom = -0.5 * h;
-        camera.updateProjectionMatrix();
-        width = w;
-        height = h;
-        resize();
-        faceGeometry.setSize(w, h);
+      if (videoSourceRef.current) {
+        const [video, webcam] = videoSourceRef.current;
+        vsrc = video.src ? (parseInt(video.dataset.loaded) ? video : false) : (parseInt(webcam.dataset.loaded) ? webcam : false);
       }
 
-      const faces = await model.estimateFaces(av.video, false, flipCamera);
+      if (vsrc) {
+        vsrc.style.transform = flipFlagRef.current ? "scaleX(-1)" : "scaleX(1)";
 
-      av.style.opacity = 1;
-      setLoadStatus("--");
+        if (width !== vsrc.videoWidth || height !== vsrc.videoHeight) {
+          const w = vsrc.videoWidth;
+          const h = vsrc.videoHeight;
+
+          camera.left = -0.5 * w;
+          camera.right = 0.5 * w;
+          camera.top = 0.5 * h;
+          camera.bottom = -0.5 * h;
+          camera.updateProjectionMatrix();
+          width = w;
+          height = h;
+          resize();
+          faceGeometry.setSize(w, h);
+        }
+      }
+
+      const faces = vsrc ? await model.estimateFaces(vsrc, false, flipFlagRef.current) : [];
+
+      setLoadStatus('running');
 
       if (faces.length > 0) {
-        faceGeometry.update(faces[0], flipCamera);
+        faceGeometry.update(faces[0], flipFlagRef.current);
 
         const track = faceGeometry.track(5, 45, 275);
         nose.position.copy(track.position);
@@ -231,10 +218,6 @@ export default function FaceTracker() {
             socket.emit('tracking', angle, 0, Math.min(dy * 2 + Math.max(track.position.y + 20, 30), 180));
           }
 
-          // window.electron.ipcRenderer.send(
-          //   'tracking',
-          //   [angle, 0, Math.min(dy * 2 + Math.max(track.position.y + 20, 30), 180)]
-          // );
           window.electron.sendTrackingData([
             angle, 0, Math.min(dy * 2 + Math.max(track.position.y + 20, 30), 180)
           ]);
@@ -254,13 +237,10 @@ export default function FaceTracker() {
     }
 
     async function init() {
-      window.electron.message.on(handleMessage);
-
       setTimeout(() => {
         (async () => {
-          // await Promise.all([tf.setBackend("webgl"), av.ready()]);
-          await Promise.all([tf.setBackend("webgl")]);
-          setLoadStatus("Loading model...");
+          await Promise.all([tf.setBackend('webgl')]);
+          setLoadStatus('Loading model...');
           const model = await facemesh.load({ maxFaces: 1 });
           setLoadStatus('Detecting face...');
 
@@ -287,28 +267,29 @@ export default function FaceTracker() {
       }, 2000);
     }
 
-    init();
-
-    return () => {
-      window.electron.message.off(handleMessage);
-    };
+    return () => window.addEventListener('resize', resize);
   }, []);
 
   return (
     <>
       <div id="container">
-        <gum-av></gum-av>
-        <canvas id="canvas"></canvas>
+        <div style={{
+          display: 'flex', alignItems:'center', justifyContent: 'center',
+          position: 'absolute', left:  0, right: 0, top: 0, bottom: 0,
+          overflow: 'hidden'
+        }}>
+          <VideoSource ref={videoSourceRef}/>
+        </div>
+        <canvas id="canvas" ref={canvasRef}></canvas>
       </div>
 
-      <div style={{position:'fixed', top: 0, left:0, background: 'rgba(255,255,255,.8)', padding:'0.25rem', fontSize:'0.8rem'}}>
+      <div style={{
+        position:'fixed', top: 0, left:0,
+        padding:'0.25rem', maxWidth: '250px',
+        background: 'rgba(255,255,255,.8)', fontSize:'0.8rem'
+      }}>
         <p>socket.io status: {isSocketConnectedRef.current ? 'connected' : '--'}</p>
         <p>model status: {loadStatus}</p>
-        <div>
-          <label>debug draw <input ref={debugFlagRef} type="checkbox" onClick={() => changeDebugMode()} /></label>
-        </div>
-
-        <VideoSource ref={videoSourceRef}/>
       </div>
     </>
   );

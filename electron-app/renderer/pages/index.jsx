@@ -5,31 +5,6 @@ import Head from 'next/head';
 import FaceTracker from '../components/FaceTracker';
 
 export default function IndexPage() {
-  const [dropPane, setDropPane] = useState(false);
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDropPane(true);
-  };
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDropPane(false);
-  };
-
-  const handleDrop = useCallback((e) => { console.log(e); }, []);
-
-  useEffect(() => {
-    document.addEventListener('dragover', handleDragOver);
-    document.addEventListener('dragleave', handleDragLeave);
-
-    return () => {
-      document.removeEventListener('dragover', handleDragOver);
-      document.removeEventListener('dragleave', handleDragLeave);
-    };
-  }, []);
-
   return (
     <>
       <Head>
@@ -43,12 +18,6 @@ export default function IndexPage() {
       </Head>
 
       <FaceTracker />
-
-      <div
-        className={ !dropPane ? 'drop-pane' : 'drop-pane ready' }
-        onDrop={handleDrop}>
-        <h3>Drop Video File Here</h3>
-      </div>
     </>
   );
 }
