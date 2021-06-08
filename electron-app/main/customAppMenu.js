@@ -32,19 +32,16 @@ const customMenuTpl = [
     label: 'File',
     submenu: [
       isMac ? { role: 'close' } : { role: 'quit' },
-    ]
-  },
 
-  {
-    label: 'Video Source',
-    submenu: [
       {
         label: 'Load Video File',
         click: async (item, win, event) => {
-          const fp = await dialog.showOpenDialog({ filters: [
-            { name: 'html5 video', extensions: ['webm', 'mp4', 'ogv'] }
-          ]});
-          win.webContents.send('message',`assets://${fp.filePaths[0]}`);
+          const fp = await dialog.showOpenDialog({
+            filters: [
+              { name: 'html5 video', extensions: ['webm', 'mp4', 'ogv'] }
+            ]
+          });
+          win.webContents.send('message', `assets://${fp.filePaths[0]}`);
         }
       }
     ]

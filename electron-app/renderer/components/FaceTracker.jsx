@@ -193,7 +193,7 @@ export default function FaceTracker() {
         }
       }
 
-      const faces = vsrc ? await model.estimateFaces(vsrc, false, flipFlagRef.current) : [];
+      const faces = vsrc ? await model.estimateFaces(vsrc, false, flipFlagRef.current).catch(_ => []) : [];
 
       setLoadStatus('running');
 
@@ -287,12 +287,15 @@ export default function FaceTracker() {
       </div>
 
       <div style={{
-        position:'fixed', top: 0, left:0,
-        padding:'0.25rem', maxWidth: '250px',
-        background: 'rgba(255,255,255,.8)', fontSize:'0.8rem'
+        position:'fixed', bottom: 0, left:0,
+        padding:'0.25rem 0.5rem',
+        background: 'rgba(255,255,255,.66)', fontSize:'0.8rem'
       }}>
-        <p>socket.io status: {isSocketConnectedRef.current ? 'connected' : '--'}</p>
-        <p>model status: {loadStatus}</p>
+        <p>
+          <span>socket.io status: {isSocketConnectedRef.current ? 'connected' : '--'}</span>
+          <span style={{ margin: "0 1em" }}>|</span>
+          <span>model status: {loadStatus}</span>
+        </p>
       </div>
     </>
   );
